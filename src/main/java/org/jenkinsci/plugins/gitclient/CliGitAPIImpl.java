@@ -3461,8 +3461,11 @@ public class CliGitAPIImpl extends LegacyCompatibleGitAPIImpl {
                 addCheckedRemoteUrl(args, remoteUrl);
             }
             if (tagPattern != null)
-                args.add(tagPattern);
+                for (String i : tagPattern.split("\\s+|,\\s*"))
+                    args.add(i);
+
             String result = launchCommandIn(args, workspace);
+
             Set<String> tags = new HashSet<>();
             BufferedReader rdr = new BufferedReader(new StringReader(result));
             String tag;
@@ -3481,7 +3484,10 @@ public class CliGitAPIImpl extends LegacyCompatibleGitAPIImpl {
     public Set<String> getTagNames(String tagPattern) throws GitException {
         try {
             ArgumentListBuilder args = new ArgumentListBuilder();
-            args.add("tag", "-l", tagPattern);
+            args.add("tag", "-l");
+            if (tagPattern != null)
+                for (String i : tagPattern.split("\\s+|,\\s*"))
+                    args.add(i);
 
             String result = launchCommandIn(args, workspace);
 
