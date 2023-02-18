@@ -3452,17 +3452,17 @@ public class CliGitAPIImpl extends LegacyCompatibleGitAPIImpl {
 
     /** {@inheritDoc} */
     @Override
-    public Set<String> getRemoteTagNames(String tagPattern) throws GitException {
+    public Set<String> getRemoteTagNames(String remoteUrl, String tagFilter) throws GitException {
         try {
-            ArgumentListBuilder args = new ArgumentListBuilder();
-            args.add("ls-remote", "--tags");
-            String remoteUrl = getRemoteUrl("origin");
-            if (remoteUrl != null) {
+            ArgumentListBuilder args = new ArgumentListBuilder("ls-remote", "--tags");
+            if (remoteUrl != null)
                 addCheckedRemoteUrl(args, remoteUrl);
-            }
-            if (tagPattern != null)
-                for (String i : tagPattern.split("\\s+|,\\s*"))
+
+            if !(isEmpty(trim(tagFilter))) {
+                args.add(tagFilter);
+                for (String i : tagFilter.split("\\s+|,\\s*"))
                     args.add(i);
+	    }
 
             String result = launchCommandIn(args, workspace);
 
@@ -3478,16 +3478,22 @@ public class CliGitAPIImpl extends LegacyCompatibleGitAPIImpl {
             throw new GitException("Error retrieving remote tag names", e);
         }
     }
+    
+    @Override
+    public Set<String> getRemoteTagNames(String tagFilter) throws GitException {
+	return getRemoteTagNames(getRemoteUrl("origin"), tagFilter);
+    }
 
     /** {@inheritDoc} */
     @Override
-    public Set<String> getTagNames(String tagPattern) throws GitException {
+    public Set<String> getTagNames(String tagFilter) throws GitException {
         try {
-            ArgumentListBuilder args = new ArgumentListBuilder();
-            args.add("tag", "-l");
-            if (tagPattern != null)
-                for (String i : tagPattern.split("\\s+|,\\s*"))
+            ArgumentListBuilder args = new ArgumentListBuilder("tag", "--list");
+            if !(isEmpty(trim(tagFilter))) {
+                args.add(tagFilter);
+                for (String i : tagFilter.split("\\s+|,\\s*"))
                     args.add(i);
+	    }
 
             String result = launchCommandIn(args, workspace);
 
